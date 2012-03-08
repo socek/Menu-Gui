@@ -36,7 +36,7 @@ class Menu(object):
             if menu == None:
                 self._x = 0
             else:
-                self._x = menu._x + Xpush
+                self._x = menu._pusshed_x()
         else:
             self._x = x
             
@@ -44,7 +44,7 @@ class Menu(object):
             if menu == None:
                 self._y = 0
             else:
-                self._y = menu._y + Ypush
+                self._y = menu._pusshed_y()
         else:
             self._y = y
             
@@ -54,6 +54,12 @@ class Menu(object):
         self._list = islist
         self._win = curses.newwin( self._get_end(), self._width, self._y, self._x )
         self._center = True
+    
+    def _pusshed_x(self):
+        return self._x + Xpush
+
+    def _pusshed_y(self):
+        return self._y + Ypush
 
     def move(self, y, x ):
         self._win.mvwin( y, x )
