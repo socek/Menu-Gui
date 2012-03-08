@@ -12,9 +12,8 @@ class MenuObject(object):
         self._fun = fun
         self._menu = None
 
-    def _set_menu(self, menu, app):
+    def _set_menu(self, menu):
         self._menu = menu
-        self._app = app
 
     @property
     def name(self):
@@ -24,16 +23,31 @@ class MenuObject(object):
         if self._fun == None:
             pass
         else:
-            self._fun( self._app, self._menu )
+            self._fun(self._menu )
 
 class Menu(object):
-    def __init__(self, app, y, x, menu, title = None, width = 22, islist = False):
-        self._app = app
+    def __init__(self, menu, title = None, y = None, x = None, width = 22, islist = False):
         self._menu_list = []
         self._number = 0
         self._char = 0
-        self._x = x
-        self._y = y
+        
+        
+        if x == None:
+            if menu == None:
+                self._x = 0
+            else:
+                self._x = menu._x + Xpush
+        else:
+            self._x = x
+            
+        if y == None:
+            if menu == None:
+                self._y = 0
+            else:
+                self._y = menu._y + Ypush
+        else:
+            self._y = y
+            
         self._title = title
         self._width = width
         self._menu = menu
@@ -52,7 +66,7 @@ class Menu(object):
             return len( self._menu_list ) + 3
 
     def add_option(self, option ):
-        option._set_menu(self, self._app)
+        option._set_menu(self)
         self._menu_list.append( option )
         self._win = curses.newwin( self._get_end() , self._width, self._y, self._x )
 
