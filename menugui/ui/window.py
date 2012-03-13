@@ -85,7 +85,17 @@ class Window(object):
             return self._width
 
     def refresh(self):
+        data = self._generate_data()
         self._new_window()
         self._c_window.border()
         self._title.refresh()
+        
+        loop = 0
+        for line in data:
+            loop += 1
+            self._c_window.addstr(loop, 1, line, 0)
+
         self._c_window.refresh()
+    
+    def _generate_data(self):
+        pass

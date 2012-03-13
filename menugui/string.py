@@ -3,10 +3,7 @@ from log import LOGGER
 
 class String(object):
     def __init__(self, text):
-        if type(text) == unicode:
-            self._text = text
-        else:
-            self._text = text.decode('utf8')
+        self._text = forceUnicode(text)
     
     @property
     def onscreen(self):
@@ -21,3 +18,9 @@ class String(object):
 
     def center(self, num):
         return self._text.center(num).encode(LOGGER.getLocale())
+
+def forceUnicode(text):
+    if type(text) == unicode:
+        return text
+    else:
+        return text.decode('utf8')
