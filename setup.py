@@ -4,7 +4,7 @@ import sys
 
 if __name__ == '__main__':
     setup(name='Menu-Gui',
-        version='0.3.1',
+        version='0.4.0',
         description="",
         author='Dominik "Socek" Długajczyk',
         author_email='msocek@gmail.com',
