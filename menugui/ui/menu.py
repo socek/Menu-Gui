@@ -35,9 +35,10 @@ class MenuObject(object):
 class Menu(Window):
     _line_template_indexing = u"%%%dd. %%s"
     _line_template = u"%s"
-    def __init__(self, title, parent = None, pos_x = None, pos_y = None, width = None, height = None, indexing=True):
+    def __init__(self, title, parent = None, pos_x = None, pos_y = None, width = None, height = None, indexing=True, with_exit=True):
         super(Menu, self).__init__(title=title, parent=parent, pos_x=pos_x, pos_y=pos_y, width=width, height=height)
         self._indexing = indexing
+        self._with_exit = with_exit
         self._menu_list = []
         self.rewind()
     
@@ -50,7 +51,10 @@ class Menu(Window):
 
     @property
     def elements(self):
-        return self._menu_list + [MenuObject(u'Exit', self.force_close)]
+        if self._with_exit:
+            return self._menu_list + [MenuObject(u'Exit', self.force_close)]
+        else:
+            return self._menu_list
 
     def add_option(self, option):
         option._set_menu(self)
@@ -112,7 +116,7 @@ class Menu(Window):
     
     def go_end(self):
         self._actual_element_number = len(self.elements) - 1
-        self._actual_first_element = len(self.elements) - self.height + 2
+        self._actual_first_element = len(self.elements) - self.height + 2 + len(self._data)
         self.refresh()
     
     def go_up(self):
@@ -140,7 +144,7 @@ class Menu(Window):
     def go_page_down(self):
         self._actual_first_element += self.height - 2
         if len(self.elements) - self._actual_first_element < self.height - 2:
-            self._actual_first_element = len(self.elements) - self.height + 2
+            self._actual_first_element = len(self.elements) - self.height + 2 + len(self._data)
         self._actual_element_number = self._actual_first_element
         self.refresh()
     
@@ -160,10 +164,6 @@ class Menu(Window):
         self.set_active(True)
         self.refresh()
         while self._running:
-            # 259 - up
-            # 258 - down
-            # 262 - Home
-            # 360 - End
             # 10 - enter
             self._c_window.keypad(1)
             self._char = self._c_window.getch()
@@ -226,3 +226,7 @@ class List(Menu):
     def run_element(self):
         self._selected_element = self.element._fun
         self.force_close()
+    
+    def force_close(self, menu = None):
+        self._running = False
+        self._selected_element = None
