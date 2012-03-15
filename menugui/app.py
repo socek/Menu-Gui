@@ -1,8 +1,9 @@
 # -*- encoding: utf-8 -*-
 import curses
-from string import String
 import locale
-from log import LOGGER
+from menugui import colors
+from menugui.log import LOGGER
+from menugui.string import String
 
 class Title(object):
     def __init__(self, stdscr, title):
@@ -12,7 +13,7 @@ class Title(object):
         self._text = String(title)        
         
         data = self._text.center(maxx)
-        self._win.addstr(data, curses.color_pair(2))
+        self._win.addstr(data, colors.COLORS['main title'])
         self._win.refresh()
 
     def close(self):
@@ -31,9 +32,8 @@ class AppClass(object):
         curses.cbreak()
         self._stdscr.keypad(1)
         curses.curs_set(0)
-        curses.start_color()
-        curses.init_pair(1, curses.COLOR_WHITE, curses.COLOR_BLACK)
-        curses.init_pair(2, curses.COLOR_BLACK, curses.COLOR_WHITE)
+        
+        colors.init()
 
         self._title = Title(self._stdscr, self._title_text)
 

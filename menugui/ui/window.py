@@ -11,9 +11,9 @@ class Window(object):
             self._text = String(text)
             self._parent = parent
         
-        def refresh(self):
+        def refresh(self, flags):
             center = ((self._parent.width-2)/2)-(len(self)/2)+1
-            self._parent._c_window.addstr(0, center, self._text.onscreen, 0)
+            self._parent._c_window.addstr(0, center, self._text.onscreen, flags)
             
         def __len__(self):
             return len(self._text)
@@ -48,6 +48,7 @@ class Window(object):
         self._height = height
         
         self._c_window = None
+        self._active = False
     
     def _new_window(self):
         if self._c_window != None:
@@ -85,17 +86,25 @@ class Window(object):
             return self._width
 
     def refresh(self):
+        if self._active:
+            flags = curses.A_BOLD
+        else:
+            flags = 0
+            
         data = self._generate_data()
         self._new_window()
         self._c_window.border()
-        self._title.refresh()
+        self._title.refresh(flags)
         
         loop = 0
         for line in data:
             loop += 1
-            self._c_window.addstr(loop, 1, line, 0)
+            self._c_window.addstr(loop, 1, line[0], line[1]|flags)
 
         self._c_window.refresh()
     
     def _generate_data(self):
         pass
+    
+    def setActive(self, active):
+        self._active = active

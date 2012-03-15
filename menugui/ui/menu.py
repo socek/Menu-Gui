@@ -1,10 +1,15 @@
 # -*- encoding: utf-8 -*-
 from time import sleep
+import curses
 from menugui.ui.window import Window
 from menugui.string import forceUnicode, String
-
+from menugui.colors import COLORS
 
 class MenuObject(object):
+    color = {
+        'normal' : 'normal',
+        'active' : 'highlited',
+    }
     def __init__(self, name, fun):
         self._name = forceUnicode(name)
         self._fun = fun
@@ -22,12 +27,18 @@ class MenuObject(object):
             pass
         else:
             self._fun(self._menu)
-
+    
+    def flags(self, state):
+        name = self.color[state]
+        return COLORS[name]
+    
 class Menu(Window):
+    _line_template = u"%%%dd. %%s" 
     def __init__(self, *args, **kwargs):
         super(Menu, self).__init__(*args, **kwargs)
         self._menu_list = []
         self._elements_width = 0
+        self.rewind()
 
     #def move(self, y, x ):
     #    self._win.mvwin( y, x )
@@ -44,20 +55,22 @@ class Menu(Window):
         self._menu_list.append(option)
         
     def _generate_data(self):
-        loop = 0
+        loop = -1
         lines = []
         number_of_elements = len(self._menu_list)
-        template = u"%%%dd. %%s" %(len(str(number_of_elements)))
-        elements_width = 0
+        template = self._line_template %(len(str(number_of_elements)))
+        width = self.width
         for element in self._menu_list + [MenuObject(u'Exit', None)]:
             loop += 1
             data = template % (loop, element.name)
-            elements_width = (elements_width >= len(data) ) and elements_width or len(data)
             
-            line = String(data).onscreen
+            if loop == self._actual_element_number:
+                line = (String(data).full(width-2), element.flags('active'))
+            else:
+                line = (String(data).full(width-2), element.flags('normal'))
+                
             lines.append(line)
         
-        self._elements_width = elements_width
         return lines
     
     @property
@@ -66,7 +79,16 @@ class Menu(Window):
     
     @property
     def width(self):
-        return ((len(self._title) > self._elements_width) and len(self._title) or self._elements_width) + 2
+        elements_width = len(self._title)
+        loop = -1
+        number_of_elements = len(self._menu_list)
+        template = self._line_template %(len(str(number_of_elements)))
+        for element in self._menu_list + [MenuObject(u'Exit', None)]:
+            loop += 1
+            data = template % (loop, element.name)
+            elements_width = (elements_width >= len(data) ) and elements_width or len(data)
+            self._elements_width = elements_width
+        return self._elements_width + 2
     #
     #def refresh_width(self):
     #    if self._list:
@@ -209,6 +231,6 @@ class Menu(Window):
     #    if self._menu != None:
     #        self._menu.refresh(False)
     #
-    #def rewind(self):
-    #    self._number = 0
-    #    self._running = True
+    def rewind(self):
+        self._actual_element_number = 0
+        self._running = True

@@ -18,6 +18,11 @@ class String(object):
 
     def center(self, num):
         return self._text.center(num).encode(LOGGER.getLocale())
+    
+    def full(self, num):
+        length = len(self._text)
+        text = self._text + (' '*(num-length))
+        return text.encode(LOGGER.getLocale())
 
 def forceUnicode(text):
     if type(text) == unicode:
