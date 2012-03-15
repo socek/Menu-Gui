@@ -9,10 +9,12 @@ _COLORS = {
 
 COLORS = {}
 
-def init():
+def init(init_colors=None):
+    if init_colors == None:
+        init_colors = _COLORS
     curses.start_color()
     loop = 0
-    for key, element in _COLORS.items():
+    for key, element in init_colors.items():
         loop += 1
         curses.init_pair(loop, *element)
         COLORS[key] = curses.color_pair(loop)
