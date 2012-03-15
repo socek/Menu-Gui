@@ -33,12 +33,20 @@ class MenuObject(object):
         return COLORS[name]
     
 class Menu(Window):
-    _line_template = u"%%%dd. %%s" 
-    def __init__(self, *args, **kwargs):
-        super(Menu, self).__init__(*args, **kwargs)
+    _line_template_indexing = u"%%%dd. %%s"
+    _line_template = u"%s"
+    def __init__(self, title, parent = None, pos_x = None, pos_y = None, width = None, height = None, indexing=True):
+        super(Menu, self).__init__(title=title, parent=parent, pos_x=pos_x, pos_y=pos_y, width=width, height=height)
+        self._indexing = indexing
         self._menu_list = []
-        self._elements_width = 0
         self.rewind()
+    
+    def _get_line_template(self):
+        if self._indexing:
+            number_of_elements = len(self.elements)
+            return self._line_template_indexing %(len(str(number_of_elements)))
+        else:
+            return self._line_template
 
     @property
     def elements(self):
@@ -49,10 +57,9 @@ class Menu(Window):
         self._menu_list.append(option)
         
     def _generate_data(self):
-        lines = []
-        number_of_elements = len(self.elements)
-        template = self._line_template %(len(str(number_of_elements)))
+        lines = [] + self._data
         width = self.width
+        template = self._get_line_template()
         
         first_element = self._actual_first_element
         last_element = self._actual_first_element + self.height - 2 
@@ -60,7 +67,10 @@ class Menu(Window):
         loop = first_element - 1
         for element in elements:
             loop += 1
-            data = template % (loop+1, element.name)
+            if self._indexing:
+                data = template % (loop+1, element.name)
+            else:
+                data = (element.name.center(self.width-2))
             
             if loop == self._actual_element_number:
                 line = (String(data).full(width-2), element.flags('active'))
@@ -73,22 +83,27 @@ class Menu(Window):
     @property
     def height(self):
         if self._height == None:
-            return len(self._menu_list)+3
+            return len(self._data) + len(self.elements)+2
         else:
             return self._height
     
     @property
     def width(self):
         elements_width = len(self._title)
+        for line in self._data:
+            line = String(line[0])
+            elements_width = (elements_width >= len(line) ) and elements_width or len(line)
+            
         loop = -1
-        number_of_elements = len(self._menu_list)
-        template = self._line_template %(len(str(number_of_elements)))
+        template = self._get_line_template()
         for element in self.elements:
             loop += 1
-            data = template % (loop+1, element.name)
+            if self._indexing:
+                data = template % (loop+1, element.name)
+            else:
+                data = template % (element.name)
             elements_width = (elements_width >= len(data) ) and elements_width or len(data)
-            self._elements_width = elements_width
-        return self._elements_width + 2
+        return elements_width + 2
     
     def go_begin(self):
         self._actual_element_number = 0
@@ -199,3 +214,15 @@ class Menu(Window):
         self._actual_element_number = 0
         self._actual_first_element = 0
         self._running = True
+
+class List(Menu):
+    def __init__(self, *args, **kwargs):
+        self._selected_element = None
+        super(List, self).__init__(*args, **kwargs)
+    
+    def get_actual_element(self):
+        return self._selected_element
+
+    def run_element(self):
+        self._selected_element = self.element._fun
+        self.force_close()

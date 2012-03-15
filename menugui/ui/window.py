@@ -3,6 +3,7 @@ import curses
 import sys
 from menugui.string import String
 from menugui.settings import SETTINGS
+from menugui.colors import COLORS
 
 class Window(object):
     
@@ -49,6 +50,7 @@ class Window(object):
         
         self._c_window = None
         self._active = False
+        self._data = []
     
     def _new_window(self):
         if self._c_window != None:
@@ -74,14 +76,18 @@ class Window(object):
     @property
     def height(self):
         if self._height == None:
-            return 3
+            return len(self._data) + 2
         else:
             return self._height
     
     @property
     def width(self):
         if self._width == None:
-            return len(self._title) + 2
+            elements_width = len(self._title)
+            number_of_elements = len(self._data)
+            for line in self._data:
+                elements_width = (elements_width >= len(line[0]) ) and elements_width or len(line[0])
+            return elements_width + 2
         else:
             return self._width
 
@@ -100,13 +106,16 @@ class Window(object):
         if data != None:
             for line in data:
                 loop += 1
-                self._c_window.addstr(loop, 1, line[0], line[1]|flags)
+                self._c_window.addstr(loop, 1, String(line[0]).center(self.width-2), line[1]|flags)
 
         if window_refresh:
             self._c_window.refresh()
     
     def _generate_data(self):
-        pass
+        return self._data
+    
+    def set_data(self, data):
+        self._data = data
     
     def set_active(self, active):
         self._active = active

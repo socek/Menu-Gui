@@ -4,7 +4,7 @@ import curses
 _COLORS = {
     'normal' : (curses.COLOR_WHITE, curses.COLOR_BLACK),
     'highlited' : (curses.COLOR_WHITE, curses.COLOR_CYAN),
-    'main title': ( curses.COLOR_BLUE, curses.COLOR_WHITE)
+    'main title': (curses.COLOR_BLUE, curses.COLOR_WHITE),
 }
 
 COLORS = {}
