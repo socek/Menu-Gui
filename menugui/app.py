@@ -48,5 +48,8 @@ class AppClass(object):
             LOGGER("Program ended")
             curses.endwin()
             LOGGER.stop()
+    
+    def getmaxyx(self):
+        return self._stdscr.getmaxyx()
 
 APP = AppClass()

@@ -4,6 +4,7 @@ import curses
 from menugui.ui.window import Window
 from menugui.string import forceUnicode, String
 from menugui.colors import COLORS
+from menugui.app import APP
 
 class MenuObject(object):
     color = {
@@ -87,9 +88,14 @@ class Menu(Window):
     @property
     def height(self):
         if self._height == None:
-            return len(self._data) + len(self.elements)+2
+            height = len(self._data) + len(self.elements)+2
         else:
-            return self._height
+            height = self._height
+        max_y = APP.getmaxyx()[0]
+        if self._pos_y + height > max_y:
+            return max_y - self._pos_y
+        else:
+            return height
     
     @property
     def width(self):
