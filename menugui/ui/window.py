@@ -85,7 +85,7 @@ class Window(object):
         else:
             return self._width
 
-    def refresh(self):
+    def refresh(self, window_refresh=True):
         if self._active:
             flags = curses.A_BOLD
         else:
@@ -102,7 +102,8 @@ class Window(object):
                 loop += 1
                 self._c_window.addstr(loop, 1, line[0], line[1]|flags)
 
-        self._c_window.refresh()
+        if window_refresh:
+            self._c_window.refresh()
     
     def _generate_data(self):
         pass

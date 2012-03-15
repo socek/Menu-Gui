@@ -59,14 +59,18 @@ class Menu(Window):
         self._menu_list.append(option)
         
     def _generate_data(self):
-        loop = -1
         lines = []
         number_of_elements = len(self.elements)
         template = self._line_template %(len(str(number_of_elements)))
         width = self.width
-        for element in self.elements:
+        
+        first_element = self._actual_first_element
+        last_element = self._actual_first_element + self.height - 2 
+        elements = self.elements[first_element:last_element]
+        loop = first_element - 1
+        for element in elements:
             loop += 1
-            data = template % (loop, element.name)
+            data = template % (loop+1, element.name)
             
             if loop == self._actual_element_number:
                 line = (String(data).full(width-2), element.flags('active'))
@@ -74,12 +78,14 @@ class Menu(Window):
                 line = (String(data).full(width-2), element.flags('normal'))
                 
             lines.append(line)
-        
         return lines
     
     @property
     def height(self):
-        return len(self._menu_list)+3
+        if self._height == None:
+            return len(self._menu_list)+3
+        else:
+            return self._height
     
     @property
     def width(self):
@@ -89,131 +95,55 @@ class Menu(Window):
         template = self._line_template %(len(str(number_of_elements)))
         for element in self.elements:
             loop += 1
-            data = template % (loop, element.name)
+            data = template % (loop+1, element.name)
             elements_width = (elements_width >= len(data) ) and elements_width or len(data)
             self._elements_width = elements_width
         return self._elements_width + 2
-    #
-    #def refresh_width(self):
-    #    if self._list:
-    #        end = len( self._menu_list )
-    #    else:
-    #        end = len( self._menu_list ) + 1
-    #    max_width = self._width
-    #    for loop in range( end ):
-    #        if len( self._menu_list ) == loop:
-    #            name = 'Exit'
-    #        else:
-    #            name = self._menu_list[loop].name
-    #        name = "%d.%s" % (loop+1, name )
-    #        text_width = len( name ) + 2
-    #        if text_width > max_width: max_width = text_width
-    #    title_width = len( self._title ) + 2
-    #    if  title_width > max_width: max_width = title_width
-    #    if max_width > self._width:
-    #        self._width = max_width
-    #        self._win = curses.newwin( self._get_end() , self._width, self._y, self._x )
-    #
-    #def go_up(self):
-    #    if self._list:
-    #        end = len( self._menu_list ) - 1
-    #    else:
-    #        end = len( self._menu_list )
-    #    self._number -= 1
-    #    if self._number < 0:
-    #        self._number = end
-    #    self.refresh()
-    #
-    #def go_down(self):
-    #    if self._list:
-    #        end = len( self._menu_list ) - 1
-    #    else:
-    #        end = len( self._menu_list )
-    #    self._number += 1
-    #    if self._number > end:
-    #        self._number = 0
-    #    self.refresh()
-    #
-    #def run_item(self):
-    #    if self._number == len(self._menu_list):
-    #        self._running = False
-    #    else:
-    #        item = self._menu_list[ self._number ]
-    #        self.refresh(False)
-    #        item.run()
-    #
-    #def refresh(self, bold = True):
-    #    self._win.erase()
-    #    self.refresh_width()
-    #    self._win.border()
-    #
-    #    main_width = self._win.getmaxyx()[1] - 2 #Usuwanie linijek po bokach
-    #
-    #    if bold:
-    #        gflags = curses.A_BOLD
-    #    else:
-    #        gflags = 0
-    #
-    #    if self._title != None:
-    #        if type( self._title ) == unicode:
-    #            title = self._title.encode( 'utf-8')
-    #        else:
-    #            title = self._title
-    #        center = ( main_width/2 ) - ( len(title)/2 ) + 1
-    #        self._win.addstr( 0, center, title, gflags )
-    #
-    #    if self._list:
-    #        end = len( self._menu_list )
-    #    else:
-    #        end = len( self._menu_list ) + 1
-    #
-    #    for loop in range( end ):
-    #        if self._number == loop:
-    #            color = 2
-    #        else:
-    #            color = 1
-    #
-    #
-    #        if len( self._menu_list ) == loop:
-    #            name = 'Exit'
-    #        else:
-    #            name = self._menu_list[loop].name
-    #
-    #        if self._center:
-    #            #usuwanie numerku i kropki szerokosci, aby numerki byly zawsze z lewej
-    #            width = main_width - len( "%d." % (loop+1) )
-    #            name = name.center( width )
-    #        if type( name ) == unicode:
-    #            name = name.encode( 'utf-8')
-    #        name = "%d.%s" % (loop+1, name )
-    #
-    #        flags = curses.color_pair(color) | gflags
-    #
-    #        self._win.addstr( loop+1, 1, name, flags )
-    #
-    #    self._win.refresh()
-    #
     
     def go_begin(self):
         self._actual_element_number = 0
+        self._actual_first_element = 0
         self.refresh()
     
     def go_end(self):
-        self._actual_element_number = len( self.elements ) - 1
+        self._actual_element_number = len(self.elements) - 1
+        self._actual_first_element = len(self.elements) - self.height + 2
         self.refresh()
     
     def go_up(self):
         end = len( self.elements ) - 1
         self._actual_element_number -= 1
         if self._actual_element_number < 0:
-            self._actual_element_number = end
+            self.go_end()
+        
+        if self._actual_element_number < self._actual_first_element:
+            self._actual_first_element = self._actual_element_number
+        
         self.refresh()
     
     def go_down(self):
         end = len( self.elements ) - 1
         self._actual_element_number += 1
         if self._actual_element_number > end:
-            self._actual_element_number = 0
+            self.go_begin()
+        
+        if self._actual_element_number - self._actual_first_element >= (self.height-2):
+            self._actual_first_element += 1
+        
+        self.refresh()
+    
+    def go_page_down(self):
+        self._actual_first_element += self.height - 2
+        if len(self.elements) - self._actual_first_element < self.height - 2:
+            self._actual_first_element = len(self.elements) - self.height + 2
+        self._actual_element_number = self._actual_first_element
+        self.refresh()
+    
+    def go_page_up(self):
+        self._actual_first_element -= self.height - 2
+        if self._actual_first_element < 0:
+            self._actual_first_element = 0
+        self._actual_element_number = self._actual_first_element
         self.refresh()
     
     @property
@@ -237,6 +167,8 @@ class Menu(Window):
             elif self._char == 10:                  self.run_element()
             elif self._char == curses.KEY_HOME:     self.go_begin()
             elif self._char == curses.KEY_END:      self.go_end()
+            elif self._char == curses.KEY_NPAGE:    self.go_page_down()
+            elif self._char == curses.KEY_PPAGE:    self.go_page_up()
             
         self.close()
     
@@ -246,6 +178,28 @@ class Menu(Window):
     def run_element(self):
         element = self.element
         element.run()
+    
+    def refresh(self):
+        super(Menu, self).refresh(False)
+        
+        pos_y = self.height - 2
+        pos_x = 0
+        flags = 0
+        if self._actual_first_element + self.height - 2 < len(self.elements):
+            char = curses.ACS_DARROW
+        else:
+            char = curses.ACS_VLINE
+        self._c_window.addch(pos_y, pos_x, char, flags)
+        
+        if self.height <= 3:
+            pos_x = self.width - 1
+        pos_y = 1
+        if self._actual_first_element != 0:
+            char = curses.ACS_UARROW
+        else:
+            char = curses.ACS_VLINE
+        self._c_window.addch(pos_y, pos_x, char, flags)
+        self._c_window.refresh()
         
     #def run(self):
     #    if self._list == False:
@@ -292,4 +246,5 @@ class Menu(Window):
     
     def rewind(self):
         self._actual_element_number = 0
+        self._actual_first_element = 0
         self._running = True
