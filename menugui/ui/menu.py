@@ -49,6 +49,10 @@ class Menu(Window):
     #        return len( self._menu_list ) + 2
     #    else:
     #        return len( self._menu_list ) + 3
+    
+    @property
+    def elements(self):
+        return self._menu_list + [MenuObject(u'Exit', self.force_close)]
 
     def add_option(self, option):
         option._set_menu(self)
@@ -57,10 +61,10 @@ class Menu(Window):
     def _generate_data(self):
         loop = -1
         lines = []
-        number_of_elements = len(self._menu_list)
+        number_of_elements = len(self.elements)
         template = self._line_template %(len(str(number_of_elements)))
         width = self.width
-        for element in self._menu_list + [MenuObject(u'Exit', None)]:
+        for element in self.elements:
             loop += 1
             data = template % (loop, element.name)
             
@@ -83,7 +87,7 @@ class Menu(Window):
         loop = -1
         number_of_elements = len(self._menu_list)
         template = self._line_template %(len(str(number_of_elements)))
-        for element in self._menu_list + [MenuObject(u'Exit', None)]:
+        for element in self.elements:
             loop += 1
             data = template % (loop, element.name)
             elements_width = (elements_width >= len(data) ) and elements_width or len(data)
@@ -189,6 +193,60 @@ class Menu(Window):
     #
     #    self._win.refresh()
     #
+    
+    def go_begin(self):
+        self._actual_element_number = 0
+        self.refresh()
+    
+    def go_end(self):
+        self._actual_element_number = len( self.elements ) - 1
+        self.refresh()
+    
+    def go_up(self):
+        end = len( self.elements ) - 1
+        self._actual_element_number -= 1
+        if self._actual_element_number < 0:
+            self._actual_element_number = end
+        self.refresh()
+    
+    def go_down(self):
+        end = len( self.elements ) - 1
+        self._actual_element_number += 1
+        if self._actual_element_number > end:
+            self._actual_element_number = 0
+        self.refresh()
+    
+    @property
+    def element(self):
+        return self.elements[self._actual_element_number]
+    
+    def run(self):
+        self._running = True
+        self.set_active(True)
+        self.refresh()
+        while self._running:
+            # 259 - up
+            # 258 - down
+            # 262 - Home
+            # 360 - End
+            # 10 - enter
+            self._c_window.keypad(1)
+            self._char = self._c_window.getch()
+            if self._char == curses.KEY_DOWN:       self.go_down()
+            elif self._char == curses.KEY_UP:       self.go_up()
+            elif self._char == 10:                  self.run_element()
+            elif self._char == curses.KEY_HOME:     self.go_begin()
+            elif self._char == curses.KEY_END:      self.go_end()
+            
+        self.close()
+    
+    def force_close(self, menu = None):
+        self._running = False
+        
+    def run_element(self):
+        element = self.element
+        element.run()
+        
     #def run(self):
     #    if self._list == False:
     #        self._number = 0
@@ -231,6 +289,7 @@ class Menu(Window):
     #    if self._menu != None:
     #        self._menu.refresh(False)
     #
+    
     def rewind(self):
         self._actual_element_number = 0
         self._running = True

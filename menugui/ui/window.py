@@ -97,14 +97,22 @@ class Window(object):
         self._title.refresh(flags)
         
         loop = 0
-        for line in data:
-            loop += 1
-            self._c_window.addstr(loop, 1, line[0], line[1]|flags)
+        if data != None:
+            for line in data:
+                loop += 1
+                self._c_window.addstr(loop, 1, line[0], line[1]|flags)
 
         self._c_window.refresh()
     
     def _generate_data(self):
         pass
     
-    def setActive(self, active):
+    def set_active(self, active):
         self._active = active
+
+    def close(self):
+        self._c_window.erase()
+        self._c_window.refresh()
+        if self._parent != None:
+            self._parent.set_active(True)
+            self._parent.refresh()
