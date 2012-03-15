@@ -40,16 +40,6 @@ class Menu(Window):
         self._elements_width = 0
         self.rewind()
 
-    #def move(self, y, x ):
-    #    self._win.mvwin( y, x )
-    #    self.refresh()
-    #
-    #def _get_end(self):
-    #    if self._list:
-    #        return len( self._menu_list ) + 2
-    #    else:
-    #        return len( self._menu_list ) + 3
-    
     @property
     def elements(self):
         return self._menu_list + [MenuObject(u'Exit', self.force_close)]
@@ -176,8 +166,12 @@ class Menu(Window):
         self._running = False
         
     def run_element(self):
+        self.set_active(False)
+        self.refresh()
         element = self.element
         element.run()
+        self.set_active(True)
+        self.refresh()
     
     def refresh(self):
         super(Menu, self).refresh(False)
@@ -201,49 +195,6 @@ class Menu(Window):
         self._c_window.addch(pos_y, pos_x, char, flags)
         self._c_window.refresh()
         
-    #def run(self):
-    #    if self._list == False:
-    #        self._number = 0
-    #    ret = None
-    #    self._running = True
-    #    self.refresh()
-    #    while self._running:
-    #        # 259 - up
-    #        # 258 - down
-    #        # 262 - Home
-    #        # 360 - End
-    #        # 10 - enter
-    #        self._win.keypad(1)
-    #        self._char = self._win.getch()
-    #        if self._char == 259:
-    #            self.go_up()
-    #        elif self._char == 258:
-    #            self.go_down()
-    #        elif self._char == 10:
-    #            if self._list:
-    #                self._running = False
-    #                ret = self._menu_list[ self._number ]._name
-    #            else:
-    #                self.run_item()
-    #        elif self._char == 360:
-    #            self._number = len( self._menu_list )
-    #            if self._list: self._number -= 1
-    #        elif self._char == 262:
-    #            self._number = 0
-    #        #else:
-    #        #    raise RuntimeError( self._char )
-    #        self.refresh()
-    #        sleep( 0.01)
-    #    self.close()
-    #    return ret
-    #
-    #def close(self):
-    #    self._win.erase()
-    #    self._win.refresh()
-    #    if self._menu != None:
-    #        self._menu.refresh(False)
-    #
-    
     def rewind(self):
         self._actual_element_number = 0
         self._actual_first_element = 0

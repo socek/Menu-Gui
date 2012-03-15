@@ -21,10 +21,10 @@ class Title(object):
 
 class AppClass(object):
 
-    def __init__(self, title):
+    def __init__(self):
         self._stdscr = None
         self._title = None
-        self._title_text = title
+        self._title_text = ''
 
     def _init(self):
         self._stdscr = curses.initscr()
@@ -37,7 +37,8 @@ class AppClass(object):
 
         self._title = Title(self._stdscr, self._title_text)
 
-    def run(self, log_path, fun):
+    def run(self, title, log_path, fun):
+        self._title_text = title
         locale.setlocale(locale.LC_ALL,"")
         LOGGER.start(log_path)
         try:
@@ -47,3 +48,5 @@ class AppClass(object):
             LOGGER("Program ended")
             curses.endwin()
             LOGGER.stop()
+
+APP = AppClass()
