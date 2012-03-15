@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Komodo Project File - DO NOT EDIT -->
+<project id="58583358-40a9-4521-b74a-8c0b4e6296b1" kpf_version="5" name="menugui.komodoproject">
+<preference-set idref="58583358-40a9-4521-b74a-8c0b4e6296b1">
+  <string relative="path" id="import_dirname"></string>
+  <string id="import_exclude_matches">*.*~;*.bak;*.tmp;CVS;.#*;*.pyo;*.pyc;.svn;*%25*;tmp*.html;.DS_Store;.git;__pycache__;*.komodoproject</string>
+  <string id="import_include_matches"></string>
+  <string id="pythonDefaultInterpreter">/usr/bin/python2</string>
+  <string relative="path" id="pythonExtraPaths"></string>
+</preference-set>
+</project>

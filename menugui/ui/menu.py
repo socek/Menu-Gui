@@ -6,28 +6,33 @@ from menugui.string import forceUnicode, String
 from menugui.colors import COLORS
 from menugui.app import APP
 
-class MenuObject(object):
+class ListElement(object):
     color = {
         'normal' : 'normal',
         'active' : 'highlited',
     }
-    def __init__(self, name, fun):
+    def __init__(self, name, data):
         self._name = forceUnicode(name)
-        self._fun = fun
+        self._data = data
         self._menu = None
+        self._type = None
 
-    def _set_menu(self, menu):
+    def _set_menu(self, menu, type):
         self._menu = menu
+        self._type = type
 
     @property
     def name(self):
         return self._name
 
     def run(self):
-        if self._fun == None:
-            pass
-        else:
-            self._fun(self._menu)
+        if self._type == 'menu':
+            if self._data == None:
+                pass
+            else:
+                self._data(self._menu)
+        elif self._type == 'list':
+            return self._data
     
     def flags(self, state):
         name = self.color[state]
@@ -42,6 +47,8 @@ class Menu(Window):
         self._with_exit = with_exit
         self._menu_list = []
         self.rewind()
+        self._tail_elements = [ListElement(u'Exit', self.force_close)]
+        self._tail_elements[0]._set_menu(self, 'menu')
     
     def _get_line_template(self):
         if self._indexing:
@@ -53,12 +60,12 @@ class Menu(Window):
     @property
     def elements(self):
         if self._with_exit:
-            return self._menu_list + [MenuObject(u'Exit', self.force_close)]
+            return self._menu_list + self._tail_elements
         else:
             return self._menu_list
 
     def add_option(self, option):
-        option._set_menu(self)
+        option._set_menu(self, 'menu')
         self._menu_list.append(option)
         
     def _generate_data(self):
@@ -220,19 +227,3 @@ class Menu(Window):
         self._actual_element_number = 0
         self._actual_first_element = 0
         self._running = True
-
-class List(Menu):
-    def __init__(self, *args, **kwargs):
-        self._selected_element = None
-        super(List, self).__init__(*args, **kwargs)
-    
-    def get_actual_element(self):
-        return self._selected_element
-
-    def run_element(self):
-        self._selected_element = self.element._fun
-        self.force_close()
-    
-    def force_close(self, menu = None):
-        self._running = False
-        self._selected_element = None
