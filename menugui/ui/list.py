@@ -17,5 +17,5 @@ class List(Menu):
         self._selected_element = None
     
     def add_option(self, option):
-        option._set_menu(self, 'list')
+        option._set_parent(self, 'list')
         self._menu_list.append(option)

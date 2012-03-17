@@ -1,43 +1,10 @@
 # -*- encoding: utf-8 -*-
-from time import sleep
 import curses
 from menugui.ui.window import Window
-from menugui.string import forceUnicode, String
-from menugui.colors import COLORS
+from menugui.string import String
 from menugui.app import APP
+from menugui.elements import MenuElement
 
-class ListElement(object):
-    color = {
-        'normal' : 'normal',
-        'active' : 'highlited',
-    }
-    def __init__(self, name, data):
-        self._name = forceUnicode(name)
-        self._data = data
-        self._menu = None
-        self._type = None
-
-    def _set_menu(self, menu, type):
-        self._menu = menu
-        self._type = type
-
-    @property
-    def name(self):
-        return self._name
-
-    def run(self):
-        if self._type == 'menu':
-            if self._data == None:
-                pass
-            else:
-                self._data(self._menu)
-        elif self._type == 'list':
-            return self._data
-    
-    def flags(self, state):
-        name = self.color[state]
-        return COLORS[name]
-    
 class Menu(Window):
     _line_template_indexing = u"%%%dd. %%s"
     _line_template = u"%s"
@@ -47,8 +14,8 @@ class Menu(Window):
         self._with_exit = with_exit
         self._menu_list = []
         self.rewind()
-        self._tail_elements = [ListElement(u'Exit', self.force_close)]
-        self._tail_elements[0]._set_menu(self, 'menu')
+        self._tail_elements = [MenuElement(u'Exit', self.force_close)]
+        self._tail_elements[0]._set_parent(self, 'menu')
     
     def _get_line_template(self):
         if self._indexing:
@@ -65,7 +32,7 @@ class Menu(Window):
             return self._menu_list
 
     def add_option(self, option):
-        option._set_menu(self, 'menu')
+        option._set_parent(self, 'menu')
         self._menu_list.append(option)
         
     def _generate_data(self):
