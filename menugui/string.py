@@ -23,6 +23,13 @@ class String(object):
         length = len(self._text)
         text = self._text + (' '*(num-length))
         return text.encode(LOGGER.getLocale())
+    
+    def part(self, start=0, end = None):
+        if end == None:
+            text = self._text[start:]
+        else:
+            text = self._text[start:end]
+        return text.encode(LOGGER.getLocale())
 
 def forceUnicode(text):
     if type(text) == unicode:
