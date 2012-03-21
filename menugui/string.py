@@ -30,6 +30,19 @@ class String(object):
         else:
             text = self._text[start:end]
         return text.encode(LOGGER.getLocale())
+    
+    def put(self, data, where = None):
+        data = forceUnicode(data)
+        if where == None:
+            self._text = self._text + data
+        else:
+            self._text = self._text[:where] + data + self._text[where:]
+    
+    def throw(self, where):
+        if where == 0:
+            self._text = self._text[1:]
+        else:
+            self._text = self._text[:where-1] + self._text[where:]
 
 def forceUnicode(text):
     if type(text) == unicode:

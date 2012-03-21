@@ -19,12 +19,6 @@ class TextLine(object):
         self._active = False
         self._running = False
     
-    def set_data(self, data):
-        self._data = String(data)
-    
-    def set_active(self, active):
-        self._active = active
-
     def refresh(self, flags = 0):
         c_window = self._parent._c_window
         if self._active:
@@ -38,7 +32,13 @@ class TextLine(object):
         data = self._data.part(start, end)
         
         c_window.addstr(self._pos_y, self._pos_x, ' '*visible_text_length, flags)
-        c_window.addstr(self._pos_y, self._pos_x, data, flags)
+        c_window.addstr(self._pos_y, self._pos_x, data +' ', flags)
+        
+        pos_x = self._pos_x + self._cursor_character - self._first_character
+        c_window.move(self._pos_y, pos_x)
+    
+    def set_active(self, active):
+        self._active = active
 
     @property
     def width(self):
@@ -47,6 +47,10 @@ class TextLine(object):
     @property
     def data(self):
         return self._data
+    
+    @property
+    def data_width(self):
+        return len(self._data)
 
     @data.setter
     def data(self, data):
@@ -61,7 +65,7 @@ class TextLine(object):
             c_window.refresh()
             
             char = self.getch()
-            self.validator(char)
+            self._on_char(char)
             
         curses.curs_set(0)
     
@@ -71,60 +75,82 @@ class TextLine(object):
         c_window.timeout(0)
         
         char = c_window.getch()
+        char2 = None
         while char == -1:
             sleep(0.01)
             char = c_window.getch()
-            if char == 27:
-                char2 = c_window.getch()
-                if char2 != -1:
-                    char = char2
-            elif char > 127:
-                char2 = c_window.getch()
-                char = (char, char2)
-        return char
+            
+        if char == 27 or char > 127:
+            char2 = c_window.getch()
+                
+        return (char, char2)
     
-    def validator(self, var):
-        #raise RuntimeError( var )
-        #print var
-        print 'valid:', var
-        if var == 10:
+    def cursor_right(self):
+        self._cursor_character += 1
+        if self._cursor_character > self.data_width:
+            self._cursor_character = self.data_width
+        if self._cursor_character - self._first_character > (self.width - 1):
+            self._first_character = self._cursor_character - self.width + 1
+    
+    def cursor_left(self):
+        self._cursor_character -= 1
+        if self._cursor_character < 0:
+            self._cursor_character = 0
+        if self._cursor_character < self._first_character:
+            self._first_character = self._cursor_character
+    
+    def home(self):
+        self._cursor_character = 0
+        self._first_character = 0
+    
+    def end(self):
+        self._cursor_character = self.data_width
+        self._first_character = self._cursor_character - self.width + 1
+    
+    def backspace(self):
+        if self._cursor_character == 0:
+            return
+        self._data.throw(self._cursor_character)
+        self.cursor_left()
+    
+    def delete(self):
+        self._data.throw(self._cursor_character+1)
+    
+    def _on_char(self, var):
+        if var[0] == 10:
             self._running = False
             return False
-        elif var == 27:
-            print 'e:', var
-            print 'b:', self._parent._c_window.getch()
-        
-        return True
-        if 1 : pass
-        elif var == 263 or var == 127:
-            #self.backspace()
-            return False
-        elif var == 260: # kursor w lewo
-            #self.cursor_left()
-            return False
-        elif var == 261: # kursor w prawo
-            #self.cursor_right()
-            return False
-        elif var == 262: # home
-            #self.cursor_home()
-            return False
-        elif var == 360:
-            #self.cursor_end()
-            return False
-        elif var == 274:
+        elif var[0] == 27 and var[1] == -1: #ESC
             self._running = False
-            self.text = None
             return False
-        elif var > 250 or var < 0:
+        elif var[0] == 263 or var[0] == 127:
+            self.backspace()
             return False
-            #raise RuntimeError( var )
-
-        #Tutaj dojdzie, jeśli nie było żadnej innej akcji
-        if self._cursor >= self.text_length():
-            self.text += chr( var )
+        elif var[0] == 260: # cursor left
+            self.cursor_left()
+            return False
+        elif var[0] == 261: # cursor right
+            self.cursor_right()
+            return False
+        elif var[0] == 262: # home
+            self.home()
+            return False
+        elif var[0] == 360: # end
+            self.end()
+            return False
+        elif var[0] == 330: # delete
+            self.delete()
+            return False
         else:
-            listtext = list( self.text )
-            listtext[ self._cursor ] = chr( var )
-            self.text = ''.join( listtext )
-        self.cursor_right()
-        return True
+            try:
+                data = chr(var[0])
+                if var[1] != None and var[1] != -1:
+                    data += chr(var[1])
+                    
+                self._data.put(data, self._cursor_character)
+                self.cursor_right()
+                return True
+            except ValueError:
+                #do nothing if unknow character accured
+                #print var
+                pass
