@@ -15,6 +15,12 @@ class String(object):
     
     def __len__(self):
         return len(self._text)
+    
+    def __str__(self):
+        return self.onscreen
+    
+    def __unicode__(self):
+        return self._text
 
     def center(self, num):
         return self._text.center(num).encode(LOGGER.getLocale())

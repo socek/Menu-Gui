@@ -82,14 +82,21 @@ class Form(Window):
         self.active_element._on_get_focus()
         self.refresh()
 
-    def next_active_element(self):
+    def next_active_element(self, rewind_after_end=False):
         def next_element():
             self._active_element += 1
             if self._active_element >= len(self._dynamic_elements):
                 self._active_element = len(self._dynamic_elements) -1
+        def next_element_with_rewind():
+            self._active_element += 1
+            if self._active_element >= len(self._dynamic_elements):
+                self._active_element = 0
         #------------------------
         try:
-            self._change_active_element(next_element)
+            if rewind_after_end:
+                self._change_active_element(next_element_with_rewind)
+            else:
+                self._change_active_element(next_element)
         except Form.NoElementsInForm:
             return None
     
@@ -127,12 +134,28 @@ class Form(Window):
             if key == None:
                 pass
             else:
-                if key[0] == 258 or key[0] == 10:
+                if key[0] in(258, 10, 261): #cursor down or enter
                     self.next_active_element()
-                elif key[0] == 259:
+                elif key[0] == 9: #tab
+                    self.next_active_element(True)
+                elif key[0] in (259, 260):
                     self.previous_active_element()
                 else:
-                    print key
+                    pass
+                    #print key
     
     def peacful_close(self):
         self._running = False
+    
+    def get_values(self):
+        tab = {}
+        for key, element in self._elements.items():
+            try:
+                tab[key] = unicode(element.data)
+            except AttributeError:
+                pass
+        return tab
+
+    def set_values(self, tab):
+        for key, value in tab.items():
+            self._elements[key].data = value
