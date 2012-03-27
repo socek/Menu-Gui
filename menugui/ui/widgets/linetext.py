@@ -1,21 +1,18 @@
 # -*- encoding: utf-8 -*-
 import curses
-ESCAPES = [ '\xc5', '\xc4', '\xc3' ]
 from menugui.string import String
-from time import sleep
+from menugui.ui.widgets.base import Widget
 
-class TextLine(object):
+class TextLine(Widget):
     
     def __init__(self, parent, pos_y, pos_x, width):
-        self._parent = parent
-        self._pos_x = pos_x
-        self._pos_y = pos_y
+        super(TextLine, self).__init__(parent, pos_y, pos_x)
         self._width = width
         
         self._first_character = 0
         self._cursor_character = 0
         
-        self._data = None
+        self._data = String('')
         self._active = False
         self._running = False
     
@@ -37,9 +34,6 @@ class TextLine(object):
         pos_x = self._pos_x + self._cursor_character - self._first_character
         c_window.move(self._pos_y, pos_x)
     
-    def set_active(self, active):
-        self._active = active
-
     @property
     def width(self):
         return self._width
@@ -55,35 +49,7 @@ class TextLine(object):
     @data.setter
     def data(self, data):
         self._data = String(data)
-
-    def run(self):
-        curses.curs_set(1)
-        c_window = self._parent._c_window
-        self._running = True
-        while self._running:
-            self.refresh()
-            c_window.refresh()
-            
-            char = self.getch()
-            self._on_char(char)
-            
-        curses.curs_set(0)
-    
-    def getch(self):
-        c_window = self._parent._c_window
-        c_window.keypad(1)
-        c_window.timeout(0)
-        
-        char = c_window.getch()
-        char2 = None
-        while char == -1:
-            sleep(0.01)
-            char = c_window.getch()
-            
-        if char == 27 or char > 127:
-            char2 = c_window.getch()
-                
-        return (char, char2)
+        self.end()
     
     def cursor_right(self):
         self._cursor_character += 1
@@ -91,6 +57,9 @@ class TextLine(object):
             self._cursor_character = self.data_width
         if self._cursor_character - self._first_character > (self.width - 1):
             self._first_character = self._cursor_character - self.width + 1
+        
+        if self._first_character == self._cursor_character - self.width -2:
+            self._first_character = self._cursor_character - self.width + 5
     
     def cursor_left(self):
         self._cursor_character -= 1
@@ -98,6 +67,9 @@ class TextLine(object):
             self._cursor_character = 0
         if self._cursor_character < self._first_character:
             self._first_character = self._cursor_character
+        
+        if self._cursor_character == self._first_character and self._first_character != 0:
+            self._first_character = self._cursor_character - 1
     
     def home(self):
         self._cursor_character = 0
@@ -106,6 +78,8 @@ class TextLine(object):
     def end(self):
         self._cursor_character = self.data_width
         self._first_character = self._cursor_character - self.width + 1
+        if self._first_character < 0:
+            self._first_character = 0
     
     def backspace(self):
         if self._cursor_character == 0:
@@ -119,28 +93,24 @@ class TextLine(object):
     def _on_char(self, var):
         if var[0] == 10:
             self._running = False
-            return False
-        elif var[0] == 27 and var[1] == -1: #ESC
+            return var
+        elif var[0] == 27: #ESC
             self._running = False
-            return False
+            return var
         elif var[0] == 263 or var[0] == 127:
             self.backspace()
-            return False
         elif var[0] == 260: # cursor left
             self.cursor_left()
-            return False
         elif var[0] == 261: # cursor right
             self.cursor_right()
-            return False
         elif var[0] == 262: # home
             self.home()
-            return False
         elif var[0] == 360: # end
             self.end()
-            return False
         elif var[0] == 330: # delete
             self.delete()
-            return False
+        elif var[0] == 9: # tab character
+            return var
         else:
             try:
                 data = chr(var[0])
@@ -149,8 +119,12 @@ class TextLine(object):
                     
                 self._data.put(data, self._cursor_character)
                 self.cursor_right()
-                return True
             except ValueError:
-                #do nothing if unknow character accured
-                #print var
-                pass
+                #return unknow character
+                return var
+        
+    def _on_get_focus(self):
+        curses.curs_set(1)
+    
+    def _on_lost_focus(self):
+        curses.curs_set(0)
