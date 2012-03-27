@@ -2,10 +2,12 @@
 import curses
 from menugui.string import String
 from menugui.ui.widgets.base import Widget
+from copy import copy
+from menugui.validators import AllValidator
 
 class TextLine(Widget):
     
-    def __init__(self, parent, pos_y, pos_x, width):
+    def __init__(self, parent, pos_y, pos_x, width, validator=AllValidator()):
         super(TextLine, self).__init__(parent, pos_y, pos_x)
         self._width = width
         
@@ -15,6 +17,7 @@ class TextLine(Widget):
         self._data = String('')
         self._active = False
         self._running = False
+        self._validator = validator
     
     def refresh(self, flags = 0):
         c_window = self._parent._c_window
@@ -29,7 +32,10 @@ class TextLine(Widget):
         data = self._data.part(start, end)
         
         c_window.addstr(self._pos_y, self._pos_x, ' '*visible_text_length, flags)
-        c_window.addstr(self._pos_y, self._pos_x, data +' ', flags)
+        if text_length == 0:
+            c_window.addstr(self._pos_y, self._pos_x, ' ', flags)
+        else:
+            c_window.addstr(self._pos_y, self._pos_x, data +' ', flags)
         
         pos_x = self._pos_x + self._cursor_character - self._first_character
         c_window.move(self._pos_y, pos_x)
@@ -116,9 +122,12 @@ class TextLine(Widget):
                 data = chr(var[0])
                 if var[1] != None and var[1] != -1:
                     data += chr(var[1])
-                    
-                self._data.put(data, self._cursor_character)
-                self.cursor_right()
+                
+                new_data = copy(self._data)
+                new_data.put(data, self._cursor_character)
+                if self._validator.validate(new_data):
+                    self._data.put(data, self._cursor_character)
+                    self.cursor_right()
             except ValueError:
                 #return unknow character
                 return var
