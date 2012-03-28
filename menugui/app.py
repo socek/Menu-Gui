@@ -37,10 +37,11 @@ class AppClass(object):
 
         self._title = Title(self._stdscr, self._title_text)
 
-    def run(self, title, log_path, fun):
+    def run(self, title, fun, log_path):
         self._title_text = title
         locale.setlocale(locale.LC_ALL,"")
-        LOGGER.start(log_path)
+        if log_path != None:
+            LOGGER.start(log_path)
         try:
             self._init()
             fun()
