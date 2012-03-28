@@ -12,7 +12,7 @@ class Menu(Window):
         super(Menu, self).__init__(title=title, parent=parent, pos_x=pos_x, pos_y=pos_y, width=width, height=height)
         self._indexing = indexing
         self._with_exit = with_exit
-        self._menu_list = []
+        self._head_elements = []
         self.rewind()
         self._tail_elements = [MenuElement(u'Exit', self.force_close)]
         self._tail_elements[0]._set_parent(self, 'menu')
@@ -27,13 +27,16 @@ class Menu(Window):
     @property
     def elements(self):
         if self._with_exit:
-            return self._menu_list + self._tail_elements
+            return self._head_elements + self._dynamic_elements() + self._tail_elements
         else:
-            return self._menu_list
+            return self._head_elements + self._dynamic_elements()
+    
+    def _dynamic_elements(self):
+        return []
 
     def add_option(self, option):
         option._set_parent(self, 'menu')
-        self._menu_list.append(option)
+        self._head_elements.append(option)
         
     def _generate_data(self):
         lines = [] + self._data

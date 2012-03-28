@@ -18,4 +18,4 @@ class List(Menu):
     
     def add_option(self, option):
         option._set_parent(self, 'list')
-        self._menu_list.append(option)
+        self._head_elements.append(option)

@@ -8,6 +8,8 @@ class Widget(object):
         self._parent = parent
         self._pos_x = pos_x
         self._pos_y = pos_y
+        self._active = False
+        self._highlited = False
 
     def _on_get_focus(self):
         pass
@@ -44,8 +46,11 @@ class Widget(object):
                 
         return (char, char2)
     
-    def set_active(self, active):
-        self._active = active
+    def set_active(self, value):
+        self._active = value
+    
+    def set_highlited(self, value):
+        self._highlited = value
     
     @property
     def width(self):

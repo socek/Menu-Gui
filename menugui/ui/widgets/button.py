@@ -23,13 +23,15 @@ class Button(Widget):
         c_window.addstr(self._pos_y, self._pos_x, self._label.center(self._width), self.flags() )
         
     def flags(self):
-        if self._active:
+        if self._highlited:
             name = self.color['active']
             flags = COLORS[name]
-            flags |= curses.A_BOLD
         else:
             name = self.color['normal']
             flags = COLORS[name]
+            
+        if self._active:
+            flags |= curses.A_BOLD
         
         return flags
 
@@ -46,3 +48,7 @@ class Button(Widget):
     @property
     def width(self):
         return self._width
+
+    def set_label(self, label):
+        self._label = String(label)
+    

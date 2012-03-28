@@ -55,6 +55,7 @@ class Window(object):
     def _new_window(self):
         if self._c_window != None:
             self._c_window.erase()
+            self._c_window.refresh()
         self._c_window = curses.newwin(self.height, self.width, self.pos_y, self.pos_x)
     
     @property
@@ -126,3 +127,6 @@ class Window(object):
         if self._parent != None:
             self._parent.set_active(True)
             self._parent.refresh()
+
+    def __call__(self, menu):
+        self.run()

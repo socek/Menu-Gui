@@ -67,10 +67,6 @@ class Form(Window):
         if len(self._dynamic_elements) == 0:
             return
         
-        self.active_element._on_get_focus()
-        
-        self.refresh()
-    
     def _change_active_element(self, fun):
         if len(self._dynamic_elements) == 0:
             raise NoElementsInForm()
@@ -111,14 +107,33 @@ class Form(Window):
         except Form.NoElementsInForm:
             return None
     
+    def first_active_element(self):
+        def first_element():
+            self._active_element = 0
+        #------------------------
+        try:
+            self._change_active_element(first_element)
+        except Form.NoElementsInForm:
+            return None
+    
+    def last_active_element(self):
+        def last_element():
+            self._active_element = len(self._dynamic_elements) -1
+        #------------------------
+        try:
+            self._change_active_element(last_element)
+        except Form.NoElementsInForm:
+            return None
+    
     def refresh(self, window_refresh=True):
         super(Form, self).refresh(False)
         
         for key, element in self._elements.items():
+            element.set_active(self._active)
             if element == self.active_element:
-                element.set_active(True)
+                element.set_highlited(True)
             else:
-                element.set_active(False)
+                element.set_highlited(False)
             element.refresh()
         
         if window_refresh:
@@ -126,6 +141,7 @@ class Form(Window):
 
     def run(self):
         self._running = True
+        self._active = True
         self.active_element._on_get_focus()
         self.refresh()
         
@@ -140,9 +156,14 @@ class Form(Window):
                     self.next_active_element(True)
                 elif key[0] in (259, 260):
                     self.previous_active_element()
+                elif key[0] == 262: #home
+                    self.first_active_element()
+                elif key[0] == 360: #end
+                    self.last_active_element()
                 else:
                     pass
-                    #print key
+        
+        self.close()
     
     def peacful_close(self):
         self._running = False
