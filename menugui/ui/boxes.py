@@ -29,7 +29,7 @@ class InfoBox(Window):
         
         self.close()
     
-    def peacful_close(self):
+    def peacful_close(self, *args, **kwargs):
         self._running = False
 
 class QuestionBox(Window):
@@ -102,7 +102,7 @@ class QuestionBox(Window):
         
         self._c_window.refresh()
     
-    def peacful_close(self):
+    def peacful_close(self, *args, **kwargs):
         self._running = False
     
     def go_begin(self):

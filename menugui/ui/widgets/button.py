@@ -43,7 +43,7 @@ class Button(Widget):
 
     def runme(self):
         if self._fun != None:
-            self._fun()
+            self._fun(self)
     
     @property
     def width(self):
