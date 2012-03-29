@@ -313,3 +313,7 @@ class SimpleForm(Form):
     def run(self):
         self._generate_elements()
         super(SimpleForm, self).run()
+    
+    def cancel(self, button):
+        self.peacful_close()
+        self.fill(self._obj)

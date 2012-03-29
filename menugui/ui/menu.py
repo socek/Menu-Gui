@@ -16,6 +16,10 @@ class Menu(Window):
         self.rewind()
         self._tail_elements = [MenuElement(u'Exit', self.force_close)]
         self._tail_elements[0]._set_parent(self, 'menu')
+        self.generate_dynamic_elements()
+    
+    def generate_dynamic_elements(self):
+        self._generated_elements = None
     
     def _get_line_template(self):
         if self._indexing:
