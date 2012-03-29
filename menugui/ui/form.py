@@ -250,9 +250,10 @@ class SimpleForm(Form):
                 glist = List(input['label'], self, indexing=False, with_exit=False)
                 for key, label in input['elements']:
                     glist.add_option(ListElement(label, key))
+                glist.set_element(button.data)
                 glist.run()
-                button.data = glist._selected_element
-                button.set_label(glist._selected_element_label)
+                button.data = glist.element._data
+                button.set_label(glist.element._name)
             return list_function
         #-----------------------------------------------------------------------
         if self._generate_elements_trigger:
