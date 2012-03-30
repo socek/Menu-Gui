@@ -12,6 +12,9 @@ class Window(object):
             self._text = String(text)
             self._parent = parent
         
+        def set_title(self, text):
+            self._text = String(text)
+        
         def refresh(self, flags):
             center = ((self._parent.width-2)/2)-(len(self)/2)+1
             self._parent._c_window.addstr(0, center, self._text.onscreen, flags)
@@ -130,3 +133,6 @@ class Window(object):
 
     def __call__(self, menu):
         self.run()
+        
+    def set_window_title(self, title):
+        self._title.set_title(title)

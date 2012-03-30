@@ -317,3 +317,9 @@ class SimpleForm(Form):
     def cancel(self, button):
         self.peacful_close()
         self.fill(self._obj)
+    
+    def get_data(self, name):
+        return self._elements[name].data
+    
+    def set_data(self, name, value):
+        self._elements[name].data = value
