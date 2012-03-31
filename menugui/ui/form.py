@@ -208,13 +208,14 @@ class SimpleForm(Form):
         self._elements_to_generate = {}
         self._elements_to_generate_list = []
     
-    def add_textline(self, name, label):
+    def add_textline(self, name, label, input_mask=None):
         self._generate_elements_trigger = True
         data = {
             'name' : name,
             'label' : forceUnicode(label),
             'type' : 'textline',
             'visible' : True,
+            'input_mask' :input_mask,
         }
         self._elements_to_generate[name] = data
         self._elements_to_generate_list.append(data)
@@ -286,9 +287,14 @@ class SimpleForm(Form):
                             Label(self, line, label_pos_x, element['label']),
                             'static')
                     
-                        self.add_element(element['name'],
-                            TextLine(self, line, input_pos_x, self.settings['input_width']),
-                            'dynamic')
+                        if element.has_key('input_mask') and element['input_mask'] != None:
+                            self.add_element(element['name'],
+                                TextLine(self, line, input_pos_x, self.settings['input_width'], input_mask=element['input_mask']),
+                                'dynamic')
+                        else:
+                            self.add_element(element['name'],
+                                TextLine(self, line, input_pos_x, self.settings['input_width']),
+                                'dynamic')
                         
                     elif element['type'] == 'list':
                         self.add_element(

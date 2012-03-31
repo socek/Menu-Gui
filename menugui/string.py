@@ -53,5 +53,7 @@ class String(object):
 def forceUnicode(text):
     if type(text) == unicode:
         return text
-    else:
+    elif type(text) == str:
         return text.decode('utf8')
+    else:
+        return unicode(text)

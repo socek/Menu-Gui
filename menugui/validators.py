@@ -1,22 +1,32 @@
 # -*- encoding: utf-8 -*-
 import re
+from menugui.string import String
 
-class Validator(object):
+class Mask(object):
+    class MaskError(Exception): pass
     regexp = None
     
     def __init__(self):
         if self.regexp != None:
             self._regexp = re.compile(self.regexp)
     
-    def validate(self, text):
+    def __call__(self, text):
         if self._regexp.match(text._text) == None:
-            return False
+            return text
         else:
-            return True
+            raise self.MaskError()
 
-class AllValidator(Validator):
-    def validate(self, text):
-        return True
+class AllMask(Mask):
+    def __call__(self, text):
+        return text
 
-class IntValidator(Validator):
-    regexp = r'^[0-9]+$'
+class IntMask(Mask):
+    def __call__(self, text):
+        try:
+            if type(text) == String:
+                return int(text._text)
+            else:
+                return int(text)
+        except ValueError:
+            raise self.MaskError()
+

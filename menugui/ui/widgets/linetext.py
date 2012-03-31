@@ -3,11 +3,11 @@ import curses
 from menugui.string import String
 from menugui.ui.widgets.base import Widget
 from copy import copy
-from menugui.validators import AllValidator
+from menugui.validators import AllMask, Mask
 
 class TextLine(Widget):
     
-    def __init__(self, parent, pos_y, pos_x, width, validator=AllValidator()):
+    def __init__(self, parent, pos_y, pos_x, width, input_mask=AllMask()):
         super(TextLine, self).__init__(parent, pos_y, pos_x)
         self._width = width
         
@@ -17,7 +17,7 @@ class TextLine(Widget):
         self._data = String('')
         self._active = False
         self._running = False
-        self._validator = validator
+        self._input_mask = input_mask
     
     def refresh(self, flags = 0):
         c_window = self._parent._c_window
@@ -46,7 +46,10 @@ class TextLine(Widget):
     
     @property
     def data(self):
-        return self._data
+        try:
+            return self._input_mask(self._data)
+        except Mask.MaskError:
+            return ''
     
     @property
     def data_width(self):
@@ -125,9 +128,12 @@ class TextLine(Widget):
                 
                 new_data = copy(self._data)
                 new_data.put(data, self._cursor_character)
-                if self._validator.validate(new_data):
+                try:
+                    self._input_mask(new_data)
                     self._data.put(data, self._cursor_character)
                     self.cursor_right()
+                except Mask.MaskError:
+                    pass
             except ValueError:
                 #return unknow character
                 return var
