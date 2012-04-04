@@ -69,8 +69,6 @@ class Form(Window):
         try:
             return self._dynamic_elements[self._active_element]
         except IndexError:
-            print self._dynamic_elements
-            print self._active_element
             return None
     
     def rewind(self):
