@@ -26,7 +26,7 @@ class ListButton(Button):
     @data.setter
     def data(self, value):
         if value == None:
-            self.set_label(u'(wybierz')
+            self.set_label(u'(wybierz)')
         else:
             for key, label in self._elements_function():
                 if key == value:
