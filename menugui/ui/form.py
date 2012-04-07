@@ -4,6 +4,7 @@ from menugui.string import forceUnicode
 from menugui.ui.widgets.button import Button
 from menugui.ui.widgets.label import Label
 from menugui.ui.widgets.linetext import TextLine
+from menugui.ui.widgets.list_button import ListButton
 from menugui.ui.list import List
 from menugui.elements import ListElement
 
@@ -190,7 +191,6 @@ class Form(Window):
         for key, value in tab.items():
             self._elements[key].data = value
 
-
 class SimpleForm(Form):
     
     settings = {
@@ -230,31 +230,19 @@ class SimpleForm(Form):
         self._elements_to_generate[name] = data
         self._elements_to_generate_list.append(data)
     
-    def add_list(self, name, label, elements):
+    def add_list(self, name, label, list_elements):
         self._generate_elements_trigger = True
         data = {
             'name' : name,
             'label' : forceUnicode(label),
             'type' : 'list',
             'visible' : True,
-            'elements' : elements,
+            'list_elements' : list_elements,
         }
         self._elements_to_generate[name] = data
         self._elements_to_generate_list.append(data)
     
     def _generate_elements(self):
-        def list_function_generator(name):
-            input = self._elements_to_generate[name]
-            def list_function(button):
-                glist = List(input['label'], self, indexing=False, with_exit=False)
-                for key, label in input['elements']():
-                    glist.add_option(ListElement(label, key))
-                glist.set_element(button.data)
-                glist.run()
-                button.data = glist.element._data
-                button.set_label(glist.element._name)
-            return list_function
-        #-----------------------------------------------------------------------
         if self._generate_elements_trigger:
             self._remove_all_elements()
             
@@ -299,9 +287,8 @@ class SimpleForm(Form):
                             'label_%s' %(element['name']),
                             Label(self, line, label_pos_x, element['label']),
                             'static')
-                        
                         self.add_element(element['name'],
-                            Button(self, line, input_pos_x, '', self.settings['input_width'], list_function_generator(element['name'])),
+                            ListButton(self, line, input_pos_x, element['name'], self.settings['input_width'], element['list_elements'] ),
                             'dynamic')
                     elif element['type'] == 'button':
                         self.add_element('button_%s' %(element['name']),
